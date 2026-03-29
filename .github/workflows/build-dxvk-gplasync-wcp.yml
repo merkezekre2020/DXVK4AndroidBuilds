@@ -65,11 +65,22 @@ jobs:
         run: |
           set -euxo pipefail
           commit_sha="$(git rev-parse --short HEAD)"
-          version="$(git describe --tags --always --dirty 2>/dev/null || git rev-parse --short HEAD)"
+          version="$(git describe --tags --exact-match 2>/dev/null || git rev-parse --short HEAD)"
           version="${version#v}"
           version="${version//\//-}"
+          patch_file="patches/dxvk-gplasync-master.patch"
+          source_ref="main"
+          if [ -f "patches/dxvk-gplasync-$version.patch" ]; then
+            patch_file="patches/dxvk-gplasync-$version.patch"
+            source_version="${version%-*}"
+            if [ "$source_version" != "$version" ]; then
+              source_ref="v$source_version"
+            fi
+          fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "commit=$commit_sha" >> "$GITHUB_OUTPUT"
+          echo "patch_file=$patch_file" >> "$GITHUB_OUTPUT"
+          echo "source_ref=$source_ref" >> "$GITHUB_OUTPUT"
 
       - name: Build and package x64 WCP
         run: |
@@ -79,16 +90,24 @@ jobs:
           build_ref="${{ inputs.ref }}"
           build_version="${{ steps.meta.outputs.version }}"
           commit_sha="${{ steps.meta.outputs.commit }}"
+          patch_file="${{ steps.meta.outputs.patch_file }}"
+          source_ref="${{ steps.meta.outputs.source_ref }}"
 
           stage_root="$RUNNER_TEMP/dxvk-wcp-stage-x64"
           dist_dir="$RUNNER_TEMP/dxvk-wcp-dist"
+          patch_repo="$GITHUB_WORKSPACE/dxvk-gplasync"
+          source_root="$RUNNER_TEMP/dxvk-source-x64"
           package_root="dxvk-$build_version"
           package_name="dxvk-gplasync-$build_version-x86_64.wcp"
 
-          rm -rf "$stage_root" "$dist_dir"
+          rm -rf "$stage_root" "$dist_dir" "$source_root"
           mkdir -p "$stage_root" "$dist_dir"
 
-          cd dxvk-gplasync
+          # Keep the GPLAsync patch repo separate from the upstream DXVK source tree.
+          git clone --recursive --branch "$source_ref" https://github.com/doitsujin/dxvk.git "$source_root"
+          cd "$source_root"
+          patch -p1 < "$patch_repo/$patch_file"
+          patch -p1 < "$patch_repo/patches/global-dxvk.conf.patch"
           ./package-release.sh "$build_version" "$stage_root" --no-package --64-only
 
           cat > "$stage_root/$package_root/profile.json" <<EOF
@@ -183,11 +202,22 @@ jobs:
         run: |
           set -euxo pipefail
           commit_sha="$(git rev-parse --short HEAD)"
-          version="$(git describe --tags --always --dirty 2>/dev/null || git rev-parse --short HEAD)"
+          version="$(git describe --tags --exact-match 2>/dev/null || git rev-parse --short HEAD)"
           version="${version#v}"
           version="${version//\//-}"
+          patch_file="patches/dxvk-gplasync-master.patch"
+          source_ref="main"
+          if [ -f "patches/dxvk-gplasync-$version.patch" ]; then
+            patch_file="patches/dxvk-gplasync-$version.patch"
+            source_version="${version%-*}"
+            if [ "$source_version" != "$version" ]; then
+              source_ref="v$source_version"
+            fi
+          fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "commit=$commit_sha" >> "$GITHUB_OUTPUT"
+          echo "patch_file=$patch_file" >> "$GITHUB_OUTPUT"
+          echo "source_ref=$source_ref" >> "$GITHUB_OUTPUT"
 
       - name: Build and package ARM64EC WCP
         run: |
@@ -197,15 +227,19 @@ jobs:
           build_ref="${{ inputs.ref }}"
           build_version="${{ steps.meta.outputs.version }}"
           commit_sha="${{ steps.meta.outputs.commit }}"
+          patch_file="${{ steps.meta.outputs.patch_file }}"
+          source_ref="${{ steps.meta.outputs.source_ref }}"
 
           stage_root="$RUNNER_TEMP/dxvk-wcp-stage-arm64ec"
           dist_dir="$RUNNER_TEMP/dxvk-wcp-dist"
+          patch_repo="$GITHUB_WORKSPACE/dxvk-gplasync"
+          source_root="$RUNNER_TEMP/dxvk-source-arm64ec"
           package_root="dxvk-$build_version"
           package_name="dxvk-gplasync-$build_version-arm64ec.wcp"
           build_dir="$RUNNER_TEMP/dxvk-arm64ec-build"
           cross_file="$RUNNER_TEMP/dxvk-arm64ec-cross.txt"
 
-          rm -rf "$stage_root" "$dist_dir" "$build_dir"
+          rm -rf "$stage_root" "$dist_dir" "$build_dir" "$source_root"
           mkdir -p "$stage_root" "$dist_dir" "$build_dir"
 
           cat > "$cross_file" <<'EOF'
@@ -226,7 +260,11 @@ jobs:
           endian = 'little'
           EOF
 
-          cd dxvk-gplasync
+          # Keep the GPLAsync patch repo separate from the upstream DXVK source tree.
+          git clone --recursive --branch "$source_ref" https://github.com/doitsujin/dxvk.git "$source_root"
+          cd "$source_root"
+          patch -p1 < "$patch_repo/$patch_file"
+          patch -p1 < "$patch_repo/patches/global-dxvk.conf.patch"
           meson setup \
             --cross-file "$cross_file" \
             --buildtype release \
