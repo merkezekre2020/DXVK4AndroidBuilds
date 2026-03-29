@@ -69,7 +69,8 @@ jobs:
           version="${version#v}"
           version="${version//\//-}"
           patch_file="patches/dxvk-gplasync-master.patch"
-          source_ref="main"
+          source_ref="$(git ls-remote --symref https://github.com/doitsujin/dxvk.git HEAD | awk '/^ref:/ {sub("refs/heads/", "", $2); print $2; exit}')"
+          source_ref="${source_ref:-master}"
           if [ -f "patches/dxvk-gplasync-$version.patch" ]; then
             patch_file="patches/dxvk-gplasync-$version.patch"
             source_version="${version%-*}"
@@ -206,7 +207,8 @@ jobs:
           version="${version#v}"
           version="${version//\//-}"
           patch_file="patches/dxvk-gplasync-master.patch"
-          source_ref="main"
+          source_ref="$(git ls-remote --symref https://github.com/doitsujin/dxvk.git HEAD | awk '/^ref:/ {sub("refs/heads/", "", $2); print $2; exit}')"
+          source_ref="${source_ref:-master}"
           if [ -f "patches/dxvk-gplasync-$version.patch" ]; then
             patch_file="patches/dxvk-gplasync-$version.patch"
             source_version="${version%-*}"
