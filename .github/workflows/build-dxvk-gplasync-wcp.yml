@@ -114,16 +114,25 @@ jobs:
           cat > "$stage_root/$package_root/profile.json" <<EOF
           {
             "type": "DXVK",
-            "arch": "x86_64",
-            "verName": "${build_version}-x86_64-gplasync",
-            "verCode": 1,
-            "source": "$repo_url",
-            "ref": "${build_ref:-default}",
-            "commit": "$commit_sha"
+            "versionName": "${build_version}-x86_64-gplasync",
+            "versionCode": 0,
+            "description": "Built for Winlator (Upstream: Philip Rebohle, Patch: Ph42oN)",
+            "files": [
+              { "source": "system32/d3d10core.dll", "target": "\${system32}/d3d10core.dll" },
+              { "source": "system32/d3d11.dll", "target": "\${system32}/d3d11.dll" },
+              { "source": "system32/d3d8.dll", "target": "\${system32}/d3d8.dll" },
+              { "source": "system32/d3d9.dll", "target": "\${system32}/d3d9.dll" },
+              { "source": "system32/dxgi.dll", "target": "\${system32}/dxgi.dll" },
+              { "source": "syswow64/d3d10core.dll", "target": "\${syswow64}/d3d10core.dll" },
+              { "source": "syswow64/d3d11.dll", "target": "\${syswow64}/d3d11.dll" },
+              { "source": "syswow64/d3d8.dll", "target": "\${syswow64}/d3d8.dll" },
+              { "source": "syswow64/d3d9.dll", "target": "\${syswow64}/d3d9.dll" },
+              { "source": "syswow64/dxgi.dll", "target": "\${syswow64}/dxgi.dll" }
+            ]
           }
           EOF
 
-          tar -cJf "$dist_dir/$package_name" -C "$stage_root" "$package_root"
+          tar -cJf "$dist_dir/$package_name" -C "$stage_root/$package_root" .
 
           ls -lh "$dist_dir"
 
@@ -284,16 +293,25 @@ jobs:
           cat > "$stage_root/$package_root/profile.json" <<EOF
           {
             "type": "DXVK",
-            "arch": "arm64ec",
-            "verName": "${build_version}-arm64ec-gplasync",
-            "verCode": 1,
-            "source": "$repo_url",
-            "ref": "${build_ref:-default}",
-            "commit": "$commit_sha"
+            "versionName": "${build_version}-arm64ec-gplasync",
+            "versionCode": 0,
+            "description": "Built for Winlator (Upstream: Philip Rebohle, Patch: Ph42oN)",
+            "files": [
+              { "source": "system32/d3d10core.dll", "target": "\${system32}/d3d10core.dll" },
+              { "source": "system32/d3d11.dll", "target": "\${system32}/d3d11.dll" },
+              { "source": "system32/d3d8.dll", "target": "\${system32}/d3d8.dll" },
+              { "source": "system32/d3d9.dll", "target": "\${system32}/d3d9.dll" },
+              { "source": "system32/dxgi.dll", "target": "\${system32}/dxgi.dll" },
+              { "source": "syswow64/d3d10core.dll", "target": "\${syswow64}/d3d10core.dll" },
+              { "source": "syswow64/d3d11.dll", "target": "\${syswow64}/d3d11.dll" },
+              { "source": "syswow64/d3d8.dll", "target": "\${syswow64}/d3d8.dll" },
+              { "source": "syswow64/d3d9.dll", "target": "\${syswow64}/d3d9.dll" },
+              { "source": "syswow64/dxgi.dll", "target": "\${syswow64}/dxgi.dll" }
+            ]
           }
           EOF
 
-          tar -cJf "$dist_dir/$package_name" -C "$stage_root" "$package_root"
+          tar -cJf "$dist_dir/$package_name" -C "$stage_root/$package_root" .
 
           ls -lh "$dist_dir"
 
